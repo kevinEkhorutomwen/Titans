@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Titans.Contract\Titans.Contract.csproj" />
+    <ProjectReference Include="..\Titans.Domain\Titans.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
