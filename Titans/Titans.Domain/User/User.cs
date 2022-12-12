@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 namespace Titans.Domain.User
 {
@@ -21,7 +22,24 @@ namespace Titans.Domain.User
 
         public static User Create(string username, byte[] passwordHash, byte[] passwordSalt)
         {
-            return new(username, passwordHash, passwordSalt);
+            var user = new User(username, passwordHash, passwordSalt);
+            user.EnsureValidState();
+            return user;
+        }
+
+        private void EnsureValidState()
+        {
+            new Validator().ValidateAndThrow(this);
+        }
+
+        class Validator : AbstractValidator<User>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.Username).NotEmpty().WithMessage(ErrorMessages.CanNotBeEmpty(nameof(Username)));
+                RuleFor(x => x.PasswordHash).NotEmpty().WithMessage(ErrorMessages.CanNotBeEmpty(nameof(PasswordHash)));
+                RuleFor(x => x.PasswordSalt).NotEmpty().WithMessage(ErrorMessages.CanNotBeEmpty(nameof(PasswordSalt)));
+            }
         }
     }
 }

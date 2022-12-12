@@ -1,8 +1,7 @@
 ﻿using System.Security.Cryptography;
-using Titans.Application.Mapping.v1;
 using Titans.Application.Repositories;
 using Titans.Contract.Models.v1;
-using Titans.Domain.User;
+using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
@@ -16,8 +15,22 @@ namespace Titans.Application.Commands
 
         public async Task RunAsync(UserRegistration command)
         {
+            if (command.Password != command.ConfirmPassword)
+            {
+                throw new Exception(ErrorMessages.PasswordMustBeIdentical);
+            }
+
+            var user = await _userRepository.FindAsyncByUsername(command.Username);
+            {
+                if(user != null)
+                {
+                    throw new Exception(ErrorMessages.UserAlreadyExist);
+                }
+            }
+
             CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            var user = Domain.User.User.Create(command.Username, passwordHash, passwordSalt);
+
+            user = Domain.User.User.Create(command.Username, passwordHash, passwordSalt);
             await _userRepository.CreateAsync(user);
         }
 

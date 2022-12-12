@@ -23,11 +23,7 @@ namespace Titans.Api.Controllers
 
         [HttpPost("Register")]
         public async Task<ActionResult> Register(UserRegistration command)
-        {
-            if (command.Password != command.ConfirmPassword)
-            {
-                return BadRequest("Die Passwörter müssen identisch sein");
-            }
+        {            
             var service = new RegisterUserApplicationService(_userRepository);
             await service.RunAsync(command);
 

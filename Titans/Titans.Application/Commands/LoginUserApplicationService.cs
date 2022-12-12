@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Titans.Application.Repositories;
 using Titans.Contract.Models.v1;
+using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
@@ -22,12 +23,12 @@ namespace Titans.Application.Commands
             var user = await _userRepository.FindAsyncByUsername(command.Username);
             if(user == null)
             {
-                throw new Exception("Kein User gefunden");
+                throw new Exception(ErrorMessages.UserNotFound(command.Username));
             }
 
             if (!VerifyPasswordHash(command.Password, user.PasswordHash, user.PasswordSalt))
             {
-                throw new Exception("Passwort falsch");
+                throw new Exception(ErrorMessages.WrongPassword);
             }
 
             return CreateToken(user);
