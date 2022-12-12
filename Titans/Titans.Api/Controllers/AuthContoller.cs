@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Titans.Application.Commands;
+using Titans.Application.Query;
 using Titans.Application.Repositories;
 using Titans.Contract.Models.v1;
 
@@ -9,22 +11,49 @@ namespace Titans.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class AuthContoller : ControllerBase
-    {       
-        public static User user = new User();
+    {
         private readonly IUserRepository _userRepository;
+        private readonly IConfiguration _configuration;
 
-        public AuthContoller(IUserRepository userRepository)
+        public AuthContoller(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
+            _configuration = configuration;
         }
 
-        [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserRegistration command)
+        [HttpPost("Register")]
+        public async Task<ActionResult> Register(UserRegistration command)
         {
+            if (command.Password != command.ConfirmPassword)
+            {
+                return BadRequest("Die Passwörter müssen identisch sein");
+            }
             var service = new RegisterUserApplicationService(_userRepository);
-            user = await service.RunAsync(command);
+            await service.RunAsync(command);
 
-            return Ok(user);
+            return Ok();
+        }
+
+        [HttpPost("Login")]
+        public async Task<ActionResult<string>> Login(UserLogin command)
+        {
+            var setting = _configuration.GetSection("AppSettings:Token").Value;
+            if (setting == null)
+            {
+                return BadRequest("Token nicht gefunden");
+            }
+            var service = new LoginUserApplicationService(_userRepository, setting);
+            var token = await service.RunAsync(command);
+            return Ok(token);
+        }
+
+        [HttpGet("Users"), Authorize]
+        public async Task<ActionResult<List<User>>> GetUsers()
+        {
+            var service = new GetUsersApplicationService(_userRepository);
+            var users = await service.RunAsync();
+
+            return Ok(users);
         }
     }
 }
