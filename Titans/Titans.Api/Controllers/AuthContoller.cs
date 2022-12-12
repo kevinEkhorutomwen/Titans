@@ -13,33 +13,30 @@ namespace Titans.Api.Controllers
     public class AuthContoller : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly IConfiguration _configuration;
+        private readonly IRegisterUserApplicationService _registerUserApplicationService;
+        private readonly ILoginUserApplicationService _loginUserApplicationService;
 
-        public AuthContoller(IUserRepository userRepository, IConfiguration configuration)
+        public AuthContoller(
+            IUserRepository userRepository,
+            IRegisterUserApplicationService registerUserApplicationService,
+            ILoginUserApplicationService loginUserApplicationService)
         {
             _userRepository = userRepository;
-            _configuration = configuration;
+            _registerUserApplicationService = registerUserApplicationService;
+            _loginUserApplicationService = loginUserApplicationService;
         }
 
         [HttpPost("Register")]
         public async Task<ActionResult> Register(UserRegistration command)
-        {            
-            var service = new RegisterUserApplicationService(_userRepository);
-            await service.RunAsync(command);
-
+        {
+            await _registerUserApplicationService.RunAsync(command);
             return Ok();
         }
 
         [HttpPost("Login")]
         public async Task<ActionResult<string>> Login(UserLogin command)
         {
-            var setting = _configuration.GetSection("AppSettings:Token").Value;
-            if (setting == null)
-            {
-                return BadRequest("Token nicht gefunden");
-            }
-            var service = new LoginUserApplicationService(_userRepository, setting);
-            var token = await service.RunAsync(command);
+            var token = await _loginUserApplicationService.RunAsync(command);
             return Ok(token);
         }
 

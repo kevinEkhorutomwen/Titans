@@ -6,6 +6,7 @@ using NSubstitute;
 using System.Security.Cryptography;
 using Titans.Application.Commands;
 using Titans.Application.Repositories;
+using Titans.Contract.Interfaces;
 using Titans.Contract.Models.v1;
 using Titans.Domain;
 using Xunit;
@@ -20,7 +21,8 @@ namespace Titans.Application.Tests.Commands
         {
             _serviceProvider = new ServiceCollection()
                 .AddScoped(x => Substitute.For<IUserRepository>())
-                .AddScoped(x => new LoginUserApplicationService(x.GetService<IUserRepository>(), _fixture.Create<string>()))
+                .AddScoped(x => Substitute.For<ISettings>())
+                .AddScoped<LoginUserApplicationService>()
                 .BuildServiceProvider();
         }
 
@@ -28,7 +30,7 @@ namespace Titans.Application.Tests.Commands
         public async void Create_DidntFindAnyUser_ThrowException()
         {
             // Arrang
-            var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
+            var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();            
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
             var command = _fixture.Create<UserLogin>();
 
@@ -45,10 +47,10 @@ namespace Titans.Application.Tests.Commands
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
-            var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
+            var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();            
             var command = _fixture.Create<UserLogin>();
             var user = UserFixtures.Create();
-
+            
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
@@ -65,9 +67,11 @@ namespace Titans.Application.Tests.Commands
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
+            var settings = _serviceProvider.GetRequiredService<ISettings>();
             var command = _fixture.Create<UserLogin>();
             CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var user = UserFixtures.Create(passwordHash: passwordHash, passwordSalt: passwordSalt);
+            settings.Token.ReturnsForAnyArgs(_fixture.Create<string>());
 
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
@@ -85,9 +89,11 @@ namespace Titans.Application.Tests.Commands
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
+            var settings = _serviceProvider.GetRequiredService<ISettings>();
             var command = _fixture.Create<UserLogin>();
             CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var user = UserFixtures.Create(passwordHash: passwordHash, passwordSalt: passwordSalt);
+            settings.Token.ReturnsForAnyArgs(_fixture.Create<string>());
 
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 

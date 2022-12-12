@@ -3,19 +3,27 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Titans.Application.Repositories;
+using Titans.Contract.Interfaces;
 using Titans.Contract.Models.v1;
 using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
-    public class LoginUserApplicationService
+    public interface ILoginUserApplicationService 
+    {
+        Task<string> RunAsync(UserLogin command);
+    }
+
+    public class LoginUserApplicationService : ILoginUserApplicationService
     {
         readonly IUserRepository _userRepository;
-        readonly string _token;
-        public LoginUserApplicationService(IUserRepository userRepository, string token)
+        readonly ISettings _settings;
+        public LoginUserApplicationService(
+            IUserRepository userRepository, 
+            ISettings settings)
         {
             _userRepository = userRepository;
-            _token = token;
+            _settings = settings;
         }
 
         public async Task<string> RunAsync(UserLogin command)
@@ -49,7 +57,7 @@ namespace Titans.Application.Commands
                 new Claim(ClaimTypes.Name, user.Username)
             };
 
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_token));
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_settings.Token));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
             var token = new JwtSecurityToken(

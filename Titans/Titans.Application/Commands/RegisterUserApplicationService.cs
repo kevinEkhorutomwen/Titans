@@ -5,7 +5,11 @@ using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
-    public class RegisterUserApplicationService
+    public interface IRegisterUserApplicationService
+    {
+        Task RunAsync(UserRegistration command);
+    }
+    public class RegisterUserApplicationService : IRegisterUserApplicationService
     {
         readonly IUserRepository _userRepository;
         public RegisterUserApplicationService(IUserRepository userRepository)
