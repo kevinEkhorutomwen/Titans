@@ -5,10 +5,6 @@ using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
-    public interface IRegisterUserApplicationService
-    {
-        Task RunAsync(UserRegistration command);
-    }
     public class RegisterUserApplicationService : IRegisterUserApplicationService
     {
         readonly IUserRepository _userRepository;
@@ -17,7 +13,7 @@ namespace Titans.Application.Commands
             _userRepository = userRepository;
         }
 
-        public async Task RunAsync(UserRegistration command)
+        public async Task RunAsync(RegisterUserCommand command)
         {
             if (command.Password != command.ConfirmPassword)
             {
@@ -26,7 +22,7 @@ namespace Titans.Application.Commands
 
             var user = await _userRepository.FindAsyncByUsername(command.Username);
             {
-                if(user != null)
+                if (user != null)
                 {
                     throw new Exception(ErrorMessages.UserAlreadyExist);
                 }

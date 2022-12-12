@@ -3,33 +3,28 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Titans.Application.Repositories;
+using Titans.Contract.Command;
 using Titans.Contract.Interfaces;
-using Titans.Contract.Models.v1;
 using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
-    public interface ILoginUserApplicationService 
-    {
-        Task<string> RunAsync(UserLogin command);
-    }
-
     public class LoginUserApplicationService : ILoginUserApplicationService
     {
         readonly IUserRepository _userRepository;
         readonly ISettings _settings;
         public LoginUserApplicationService(
-            IUserRepository userRepository, 
+            IUserRepository userRepository,
             ISettings settings)
         {
             _userRepository = userRepository;
             _settings = settings;
         }
 
-        public async Task<string> RunAsync(UserLogin command)
+        public async Task<string> RunAsync(LoginUserCommand command)
         {
             var user = await _userRepository.FindAsyncByUsername(command.Username);
-            if(user == null)
+            if (user == null)
             {
                 throw new Exception(ErrorMessages.UserNotFound(command.Username));
             }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Titans.Domain.User;
+using Titans.SqlDb.Models;
 
 namespace Titans.SqlDb
 {

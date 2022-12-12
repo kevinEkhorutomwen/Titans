@@ -7,7 +7,7 @@ namespace Titans.Application.Tests
     public class UserFixtures
     {
         readonly static IFixture _fixture = new Fixture();
-        public static User Create(string username = null, byte[] passwordHash = null, byte[] passwordSalt = null)
+        public static User Create(string? username = null, byte[]? passwordHash = null, byte[]? passwordSalt = null)
         {
             username ??= _fixture.Create<string>();
             passwordHash ??= _fixture.Create<byte[]>();

@@ -29,7 +29,7 @@ namespace Titans.Application.Tests.Commands
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var service = _serviceProvider.GetRequiredService<RegisterUserApplicationService>();
-            var command = _fixture.Create<UserRegistration>();
+            var command = _fixture.Create<RegisterUserCommand>();
 
             // Act
             Func<Task> act = async () => await service.RunAsync(command);
@@ -76,11 +76,11 @@ namespace Titans.Application.Tests.Commands
             await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
         }
 
-        private UserRegistration CreateCommand()
+        private RegisterUserCommand CreateCommand()
         {
             var password = _fixture.Create<string>();
 
-            return _fixture.Build<UserRegistration>()
+            return _fixture.Build<RegisterUserCommand>()
                 .With(x => x.Password, password)
                 .With(x => x.ConfirmPassword, password)
                 .Create();

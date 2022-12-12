@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Titans.Application.Repositories;
 using Titans.Domain.User;
 
@@ -7,25 +8,31 @@ namespace Titans.SqlDb
     public class UserRepository : IUserRepository
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public UserRepository(DataContext context) 
+        public UserRepository(DataContext context,
+            IMapper mapper) 
         {
             _context = context;
+            _mapper = mapper;
         }
         public async Task CreateAsync(User user)
         {
-            _context.Users.Add(user);
+            var sqlUser = _mapper.Map<Models.User>(user);
+            _context.Users.Add(sqlUser);
             await _context.SaveChangesAsync();
         }
 
         public async Task<List<User>> FindAsync()
         {
-            return await _context.Users.ToListAsync();
+            var sqlUsers = await _context.Users.ToListAsync();
+            return sqlUsers.Select(x => _mapper.Map<User>(x)).ToList();
         }
 
         public async Task<User?> FindAsyncByUsername(string username)
         {
-            return await _context.Users.Where(x => x.Username == username).FirstOrDefaultAsync();
+            var sqlUser = await _context.Users.Where(x => x.Username == username).FirstOrDefaultAsync();
+            return _mapper.Map<User>(sqlUser);
         }
     }
 }

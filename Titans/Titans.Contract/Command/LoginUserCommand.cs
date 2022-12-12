@@ -1,6 +1,6 @@
-﻿namespace Titans.Contract.Models.v1
+﻿namespace Titans.Contract.Command
 {
-    public class UserLogin
+    public class LoginUserCommand
     {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;

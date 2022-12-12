@@ -6,6 +6,8 @@ using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using Titans.Api;
 using Titans.Application.Commands;
+using Titans.Application.Mapping;
+using Titans.Application.Query;
 using Titans.Application.Repositories;
 using Titans.Contract.Interfaces;
 using Titans.SqlDb;
@@ -21,6 +23,9 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISettings, Settings>();
 builder.Services.AddScoped<ILoginUserApplicationService, LoginUserApplicationService>();
 builder.Services.AddScoped<IRegisterUserApplicationService, RegisterUserApplicationService>();
+builder.Services.AddScoped<IGetUsersApplicationService, GetUsersApplicationService>();
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(Titans.SqlDb.Mapping.AutoMapperProfile).Assembly);
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -44,7 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
-            .GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
+            .GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value!)),
             ValidateIssuer = false,
             ValidateAudience = false,
         };

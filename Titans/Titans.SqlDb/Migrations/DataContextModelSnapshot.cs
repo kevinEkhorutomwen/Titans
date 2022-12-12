@@ -21,7 +21,7 @@ namespace Titans.SqlDb.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Titans.Domain.User", b =>
+            modelBuilder.Entity("Titans.SqlDb.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

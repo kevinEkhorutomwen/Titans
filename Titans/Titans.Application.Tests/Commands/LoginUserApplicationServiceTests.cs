@@ -6,8 +6,8 @@ using NSubstitute;
 using System.Security.Cryptography;
 using Titans.Application.Commands;
 using Titans.Application.Repositories;
+using Titans.Contract.Command;
 using Titans.Contract.Interfaces;
-using Titans.Contract.Models.v1;
 using Titans.Domain;
 using Xunit;
 
@@ -32,7 +32,7 @@ namespace Titans.Application.Tests.Commands
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();            
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
-            var command = _fixture.Create<UserLogin>();
+            var command = _fixture.Create<LoginUserCommand>();
 
             // Act
             Func<Task> act = async () => await service.RunAsync(command);
@@ -48,7 +48,7 @@ namespace Titans.Application.Tests.Commands
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();            
-            var command = _fixture.Create<UserLogin>();
+            var command = _fixture.Create<LoginUserCommand>();
             var user = UserFixtures.Create();
             
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
@@ -68,7 +68,7 @@ namespace Titans.Application.Tests.Commands
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
             var settings = _serviceProvider.GetRequiredService<ISettings>();
-            var command = _fixture.Create<UserLogin>();
+            var command = _fixture.Create<LoginUserCommand>();
             CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var user = UserFixtures.Create(passwordHash: passwordHash, passwordSalt: passwordSalt);
             settings.Token.ReturnsForAnyArgs(_fixture.Create<string>());
@@ -90,7 +90,7 @@ namespace Titans.Application.Tests.Commands
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
             var settings = _serviceProvider.GetRequiredService<ISettings>();
-            var command = _fixture.Create<UserLogin>();
+            var command = _fixture.Create<LoginUserCommand>();
             CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
             var user = UserFixtures.Create(passwordHash: passwordHash, passwordSalt: passwordSalt);
             settings.Token.ReturnsForAnyArgs(_fixture.Create<string>());

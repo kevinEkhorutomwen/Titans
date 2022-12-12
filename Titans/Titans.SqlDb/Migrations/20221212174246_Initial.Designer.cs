@@ -11,7 +11,7 @@ using Titans.SqlDb;
 namespace Titans.SqlDb.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20221212003455_Initial")]
+    [Migration("20221212174246_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace Titans.SqlDb.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Titans.Domain.User", b =>
+            modelBuilder.Entity("Titans.SqlDb.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
