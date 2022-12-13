@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Titans\Titans.Application
+        working-directory: Titans/Titans.Application
 
     steps:
     - uses: actions/checkout@v3
