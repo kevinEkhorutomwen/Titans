@@ -4,7 +4,10 @@
     {
         public static string GetDomainValidationErrorText(string property, string message)
         {
-            return $"Validation failed: \r\n -- {property}: {message} Severity: Error";
+            return $"""
+                    Validation failed: 
+                     -- {property}: {message} Severity: Error
+                    """;
         }
     }
 }
