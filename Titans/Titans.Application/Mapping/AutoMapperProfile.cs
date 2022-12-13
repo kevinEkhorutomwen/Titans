@@ -8,6 +8,7 @@ namespace Titans.Application.Mapping
         public AutoMapperProfile()
         {
             CreateMap<Domain.User.User, User>();
+            CreateMap<Domain.User.RefreshToken, RefreshToken>().ReverseMap();
         }
     }
 }

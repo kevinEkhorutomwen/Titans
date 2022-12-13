@@ -25,13 +25,20 @@ namespace Titans.SqlDb
 
         public async Task<List<User>> FindAsync()
         {
-            return await _mapper.ProjectTo<User>(_context.Users).ToListAsync();
+            return await _mapper.ProjectTo<User>(_context.Users.Include(x => x.RefreshToken)).AsNoTracking().ToListAsync();
         }
 
         public async Task<User?> FindAsyncByUsername(string username)
         {
-            var sqlUser = await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+            var sqlUser = await _context.Users.Include(x => x.RefreshToken).AsNoTracking().FirstOrDefaultAsync(x => x.Username == username);
             return _mapper.Map<User>(sqlUser);
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            var sqlUser = _mapper.Map<Models.User>(user);
+            _context.Update(sqlUser);
+            await _context.SaveChangesAsync();
         }
     }
 }

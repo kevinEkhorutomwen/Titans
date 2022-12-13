@@ -1,13 +1,14 @@
 ﻿using AutoFixture;
 using FluentAssertions;
 using FluentValidation;
+using Titans.Domain.User;
 using Xunit;
 
 namespace Titans.Domain.Tests.User
 {
     public class UserTests
     {
-        readonly IFixture _fixture = new Fixture();
+        readonly IFixture _fixture = new Fixture().RegisterDomainCreatorFunctions();
 
         [Fact]
         public void Create_WithoutUsername_ThrowValidationException()
@@ -33,7 +34,7 @@ namespace Titans.Domain.Tests.User
             var passwordSalt = _fixture.Create<byte[]>();
 
             // Act
-            Func<Domain.User.User> act = () => Domain.User.User.Create(username, null, passwordSalt);
+            Func<Domain.User.User> act = () => Domain.User.User.Create(username, Array.Empty<byte>(), passwordSalt);
 
             // Assert
             var missingProp = nameof(Domain.User.User.PasswordHash);
@@ -49,7 +50,7 @@ namespace Titans.Domain.Tests.User
             var passwordHash = _fixture.Create<byte[]>();
 
             // Act
-            Func<Domain.User.User> act = () => Domain.User.User.Create(username, passwordHash, null);
+            Func<Domain.User.User> act = () => Domain.User.User.Create(username, passwordHash, Array.Empty<byte>());
 
             // Assert
             var missingProp = nameof(Domain.User.User.PasswordSalt);
@@ -73,6 +74,20 @@ namespace Titans.Domain.Tests.User
             act.Should().NotThrow();
             user.Username.Should().Be(username);
             user.PasswordHash.Should().BeEquivalentTo(passwordHash);
+        }
+
+        [Fact]
+        public void UpdateRefreshToken_RefreshTokenGetsUpdated_PropertiesAreSetCorrectly()
+        {
+            // Arrang
+            var refreshToken = _fixture.Create<RefreshToken>();
+            var user = _fixture.Create<Domain.User.User>();
+
+            // Act
+            user.UpdateRefreshToken(refreshToken);
+
+            // Assert
+            user.RefreshToken.Should().Be(refreshToken);
         }
     }
 }

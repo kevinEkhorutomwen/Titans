@@ -1,17 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Titans.Domain.User
 {
     public class User
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; private set; }
         public string Username { get; private set; } = string.Empty;
         public byte[] PasswordHash { get; private set; }
         public byte[] PasswordSalt { get; private set; }
+        public RefreshToken? RefreshToken { get; private set; }
 
         private User(string username, byte[] passwordHash, byte[] passwordSalt)
         {
@@ -25,6 +22,11 @@ namespace Titans.Domain.User
             var user = new User(username, passwordHash, passwordSalt);
             user.EnsureValidState();
             return user;
+        }
+
+        public void UpdateRefreshToken(RefreshToken refreshToken)
+        {
+            RefreshToken = refreshToken;
         }
 
         private void EnsureValidState()

@@ -21,14 +21,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISettings, Settings>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ILoginUserApplicationService, LoginUserApplicationService>();
 builder.Services.AddScoped<IRegisterUserApplicationService, RegisterUserApplicationService>();
 builder.Services.AddScoped<IGetUsersApplicationService, GetUsersApplicationService>();
+builder.Services.AddScoped<IGetUserInformationApplicationService, GetUserInformationApplicationService>();
+builder.Services.AddScoped<IRefreshTokenApplicationService, RefreshTokenApplicationService>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(Titans.SqlDb.Mapping.AutoMapperProfile).Assembly);
+builder.Services.AddCors(options => options.AddPolicy(name: "TitansOrigins",
+    policy =>
+    {
+        policy.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader();
+    }));
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.EnableSensitiveDataLogging();
 });
 builder.Services.AddSwaggerGen(options =>
 {
@@ -67,6 +76,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors("TitansOrigins");
 
 app.MapControllers();
 

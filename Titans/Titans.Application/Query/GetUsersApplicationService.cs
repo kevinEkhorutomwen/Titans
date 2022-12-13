@@ -20,7 +20,7 @@ namespace Titans.Application.Query
         public async Task<List<User>> RunAsync()
         {
             var users = await _userRepository.FindAsync();
-            return users.Select(x => _mapper.Map<User>(x)).ToList();
+            return users.Select(_mapper.Map<User>).ToList();
         }
     }
 }

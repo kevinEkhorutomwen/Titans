@@ -8,6 +8,7 @@ namespace Titans.SqlDb.Mapping
         public AutoMapperProfile()
         {
             CreateMap<Domain.User.User, User>().ReverseMap();
+            CreateMap<Domain.User.RefreshToken, RefreshToken>().ReverseMap();
         }
     }
 }

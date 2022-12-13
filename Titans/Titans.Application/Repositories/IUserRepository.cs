@@ -5,6 +5,7 @@ namespace Titans.Application.Repositories
     public interface IUserRepository
     {
         Task CreateAsync(User user);
+        Task UpdateAsync(User user);
         Task<List<User>> FindAsync();
         Task<User?> FindAsyncByUsername(string username);
     }
