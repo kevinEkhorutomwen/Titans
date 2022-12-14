@@ -16,6 +16,7 @@ namespace Titans.Application.Tests.Commands
     {
         readonly IFixture _fixture = new Fixture();
         readonly IServiceProvider _serviceProvider;
+        readonly CancellationToken _cancellationToken = CancellationToken.None;
         public RefreshTokenApplicationServiceTests()
         {
             _serviceProvider = new ServiceCollection()
@@ -25,7 +26,7 @@ namespace Titans.Application.Tests.Commands
                 .BuildServiceProvider();
         }
         [Fact]
-        public async void RunAsync_UserNotFound_ThrowException()
+        public async void Handle_UserNotFound_ThrowException()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -33,7 +34,7 @@ namespace Titans.Application.Tests.Commands
             var command = _fixture.Create<RefreshTokenCommand>();
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.UserNotFound(command.Username));
@@ -42,7 +43,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void RunAsync_TokenInvalid_ThrowException()
+        public async void Handle_TokenInvalid_ThrowException()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -52,7 +53,7 @@ namespace Titans.Application.Tests.Commands
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.TokenInvalid);
@@ -61,7 +62,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void RunAsync_TokenAbgelaufen_ThrowException()
+        public async void Handle_TokenAbgelaufen_ThrowException()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -72,7 +73,7 @@ namespace Titans.Application.Tests.Commands
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.TokenExpired);
@@ -81,7 +82,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void RunAsync_UserFound_DontThrowError()
+        public async void Handle_UserFound_DontThrowError()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -92,7 +93,7 @@ namespace Titans.Application.Tests.Commands
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().NotThrowAsync();

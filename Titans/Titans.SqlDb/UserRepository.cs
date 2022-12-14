@@ -11,7 +11,7 @@ namespace Titans.SqlDb
         private readonly IMapper _mapper;
 
         public UserRepository(DataContext context,
-            IMapper mapper) 
+            IMapper mapper)
         {
             _context = context;
             _mapper = mapper;

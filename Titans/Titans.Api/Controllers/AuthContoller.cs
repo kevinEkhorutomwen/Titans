@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Titans.Application.Commands;
-using Titans.Application.Query;
 using Titans.Contract.Command;
 using Titans.Contract.Models.v1;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Titans.Contract.Queries;
 
 namespace Titans.Api.Controllers
 {
@@ -13,38 +12,25 @@ namespace Titans.Api.Controllers
     [ApiController]
     public class AuthContoller : ControllerBase
     {
-        private readonly IRegisterUserApplicationService _registerUserApplicationService;
-        private readonly ILoginUserApplicationService _loginUserApplicationService;
-        private readonly IGetUsersApplicationService _getUsersApplicationService;
-        private readonly IRefreshTokenApplicationService _refreshTokenApplicationService;
-        private readonly IGetUserInformationApplicationService _getUserInformationApplicationService;
+        private readonly IMediator _mediator;
 
-        public AuthContoller(
-            IRegisterUserApplicationService registerUserApplicationService,
-            ILoginUserApplicationService loginUserApplicationService,
-            IGetUsersApplicationService getUsersApplicationService,
-            IRefreshTokenApplicationService refreshTokenApplicationService,
-            IGetUserInformationApplicationService getUserInformationApplicationService)
+        public AuthContoller(IMediator mediator)
         {
-            _registerUserApplicationService = registerUserApplicationService;
-            _loginUserApplicationService = loginUserApplicationService;
-            _getUsersApplicationService = getUsersApplicationService;
-            _refreshTokenApplicationService = refreshTokenApplicationService;
-            _getUserInformationApplicationService = getUserInformationApplicationService;
+            _mediator = mediator;
         }
 
         [HttpPost("Register")]
         public async Task<ActionResult> Register(RegisterUserCommand command)
         {
-            await _registerUserApplicationService.RunAsync(command);
+            await _mediator.Publish(command);
             return Ok();
         }
 
         [HttpPost("Login")]
         public async Task<ActionResult<string>> Login(LoginUserCommand command)
         {
-            var jwtToken = await _loginUserApplicationService.RunAsync(command);
-            var refreshToken = await _refreshTokenApplicationService.RunAsync(new RefreshTokenCommand
+            var jwtToken = await _mediator.Send(command);
+            var refreshToken = await _mediator.Send(new RefreshTokenCommand
             {
                 Username = command.Username
             });
@@ -56,17 +42,17 @@ namespace Titans.Api.Controllers
 
         [HttpGet("Users")]
         public async Task<ActionResult<List<User>>> GetUsers()
-        {            
-             var users = await _getUsersApplicationService.RunAsync();
+        {
+            var users = await _mediator.Send(new GetUsersQuery());
             return Ok(users);
         }
 
         [HttpPost("RefreshToken"), Authorize]
         public async Task<ActionResult<string>> RefreshToken()
         {
-            var usernamer = _getUserInformationApplicationService.GetCurrentUserName();
-            var cookieRefreshToken = _getUserInformationApplicationService.GetCurrentRefreshToken();
-            var refreshToken = await _refreshTokenApplicationService.RunAsync(new RefreshTokenCommand
+            var usernamer = await _mediator.Send(new GetCurrentUserNameQuery());
+            var cookieRefreshToken = await _mediator.Send(new GetCurrentRefreshToken());
+            var refreshToken = await _mediator.Send(new RefreshTokenCommand
             {
                 Username = usernamer,
                 CurrentToken = cookieRefreshToken
