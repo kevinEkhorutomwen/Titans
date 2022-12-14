@@ -45,11 +45,7 @@ namespace Titans.Application.Commands
 
             RefreshToken CreateToken()
             {
-                return new RefreshToken
-                {
-                    Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                    Expires = DateTime.UtcNow.AddDays(7)
-                };
+                return new RefreshToken(Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)), DateTime.UtcNow, DateTime.UtcNow.AddDays(7));
             }
 
             async Task<Domain.User.User> GetUser()

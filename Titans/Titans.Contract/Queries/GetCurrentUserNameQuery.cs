@@ -1,6 +1,4 @@
-﻿using MediatR;
+﻿namespace Titans.Contract.Queries;
+using MediatR;
 
-namespace Titans.Contract.Queries
-{
-    public record GetCurrentUserNameQuery : IRequest<string> { }
-}
+public record GetCurrentUserNameQuery : IRequest<string> { }

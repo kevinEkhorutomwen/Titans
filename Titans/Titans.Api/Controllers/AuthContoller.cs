@@ -30,10 +30,7 @@ namespace Titans.Api.Controllers
         public async Task<ActionResult<string>> Login(LoginUserCommand command)
         {
             var jwtToken = await _mediator.Send(command);
-            var refreshToken = await _mediator.Send(new RefreshTokenCommand
-            {
-                Username = command.Username
-            });
+            var refreshToken = await _mediator.Send(new RefreshTokenCommand(command.Username, string.Empty));
 
             SetRefreshToken(refreshToken);
 
@@ -50,13 +47,9 @@ namespace Titans.Api.Controllers
         [HttpPost("RefreshToken"), Authorize]
         public async Task<ActionResult<string>> RefreshToken()
         {
-            var usernamer = await _mediator.Send(new GetCurrentUserNameQuery());
+            var username = await _mediator.Send(new GetCurrentUserNameQuery());
             var cookieRefreshToken = await _mediator.Send(new GetCurrentRefreshToken());
-            var refreshToken = await _mediator.Send(new RefreshTokenCommand
-            {
-                Username = usernamer,
-                CurrentToken = cookieRefreshToken
-            });
+            var refreshToken = await _mediator.Send(new RefreshTokenCommand(username, cookieRefreshToken));
 
             SetRefreshToken(refreshToken);
 
