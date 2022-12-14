@@ -1,47 +1,45 @@
-﻿using MediatR;
+﻿namespace Titans.Application.Commands;
+using MediatR;
 using System.Security.Cryptography;
 using Titans.Application.Repositories;
 using Titans.Contract.Models.v1;
 using Titans.Domain;
 
-namespace Titans.Application.Commands
+public class RegisterUserApplicationService : INotificationHandler<RegisterUserCommand>
 {
-    public class RegisterUserApplicationService : INotificationHandler<RegisterUserCommand>
+    readonly IUserRepository _userRepository;
+    public RegisterUserApplicationService(IUserRepository userRepository)
     {
-        readonly IUserRepository _userRepository;
-        public RegisterUserApplicationService(IUserRepository userRepository)
+        _userRepository = userRepository;
+    }
+
+    public async Task Handle(RegisterUserCommand command, CancellationToken cancellationToken)
+    {
+        if (command.Password != command.ConfirmPassword)
         {
-            _userRepository = userRepository;
+            throw new Exception(ErrorMessages.PasswordMustBeIdentical);
         }
 
-        public async Task Handle(RegisterUserCommand command, CancellationToken cancellationToken)
+        var user = await _userRepository.FindAsyncByUsername(command.Username);
         {
-            if (command.Password != command.ConfirmPassword)
+            if (user != null)
             {
-                throw new Exception(ErrorMessages.PasswordMustBeIdentical);
+                throw new Exception(ErrorMessages.UserAlreadyExist);
             }
-
-            var user = await _userRepository.FindAsyncByUsername(command.Username);
-            {
-                if (user != null)
-                {
-                    throw new Exception(ErrorMessages.UserAlreadyExist);
-                }
-            }
-
-            CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
-            user = Domain.User.User.Create(command.Username, passwordHash, passwordSalt);
-            await _userRepository.CreateAsync(user);
         }
 
-        private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+        user = Domain.User.User.Create(command.Username, passwordHash, passwordSalt);
+        await _userRepository.CreateAsync(user);
+    }
+
+    private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using (var hmac = new HMACSHA512())
         {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
+            passwordSalt = hmac.Key;
+            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         }
     }
 }

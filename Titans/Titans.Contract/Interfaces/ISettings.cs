@@ -1,7 +1,6 @@
-﻿namespace Titans.Contract.Interfaces
+﻿namespace Titans.Contract.Interfaces;
+
+public interface ISettings
 {
-    public interface ISettings
-    {
-        string Token { get; }
-    }
+    string Token { get; }
 }
