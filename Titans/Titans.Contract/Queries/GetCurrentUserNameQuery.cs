@@ -2,5 +2,5 @@
 
 namespace Titans.Contract.Queries
 {
-    public class GetCurrentUserNameQuery : IRequest<string> { }
+    public record GetCurrentUserNameQuery : IRequest<string> { }
 }

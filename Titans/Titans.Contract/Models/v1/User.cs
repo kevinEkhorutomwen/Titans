@@ -1,10 +1,10 @@
 ﻿namespace Titans.Contract.Models.v1
 {
-    public class User
+    public record User
     {
-        public string Username { get; set; } = string.Empty;
-        public byte[] PasswordHash { get; set; } = Array.Empty<byte>();
-        public byte[] PasswordSalt { get; set; } = Array.Empty<byte>();
-        public RefreshToken? RefreshToken { get; set; }
+        public string Username { get; init; } = string.Empty;
+        public byte[] PasswordHash { get; init; } = Array.Empty<byte>();
+        public byte[] PasswordSalt { get; init; } = Array.Empty<byte>();
+        public RefreshToken? RefreshToken { get; init; }
     }
 }
