@@ -15,6 +15,7 @@ namespace Titans.Application.Tests.Commands
     {
         readonly IFixture _fixture = new Fixture();
         readonly IServiceProvider _serviceProvider;
+        readonly CancellationToken _cancellationToken = CancellationToken.None;
         public RegisterUserApplicationServiceTests()
         {
             _serviceProvider = new ServiceCollection()
@@ -24,7 +25,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void RunAsync_PasswordsAreNotIdentical_ThrowException()
+        public async void Handle_PasswordsAreNotIdentical_ThrowException()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -32,7 +33,7 @@ namespace Titans.Application.Tests.Commands
             var command = _fixture.Create<RegisterUserCommand>();
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.PasswordMustBeIdentical);
@@ -41,7 +42,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void RunAsync_UsernameAlreadyExist_ThrowException()
+        public async void Handle_UsernameAlreadyExist_ThrowException()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -51,7 +52,7 @@ namespace Titans.Application.Tests.Commands
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.UserAlreadyExist);
@@ -60,7 +61,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void RunAsync_UsernameDosntExist_DontThrowError()
+        public async void Handle_UsernameDosntExist_DontThrowError()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -68,7 +69,7 @@ namespace Titans.Application.Tests.Commands
             var command = CreateCommand();
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().NotThrowAsync();

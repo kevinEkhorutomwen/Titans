@@ -17,6 +17,7 @@ namespace Titans.Application.Tests.Commands
     {
         readonly IFixture _fixture = new Fixture();
         readonly IServiceProvider _serviceProvider;
+        readonly CancellationToken _cancellationToken = CancellationToken.None;
         public LoginUserApplicationServiceTests()
         {
             _serviceProvider = new ServiceCollection()
@@ -27,15 +28,15 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void Create_DidntFindAnyUser_ThrowException()
+        public async void Handle_DidntFindAnyUser_ThrowException()
         {
             // Arrang
-            var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();            
+            var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
             var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
             var command = _fixture.Create<LoginUserCommand>();
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.UserNotFound(command.Username));
@@ -43,18 +44,18 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void Create_PasswordDosntMatch_ThrowException()
+        public async void Handle_PasswordDosntMatch_ThrowException()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
-            var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();            
+            var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
             var command = _fixture.Create<LoginUserCommand>();
             var user = UserFixtures.Create();
-            
+
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.WrongPassword);
@@ -62,7 +63,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void Create_PasswordAndUserMatch_DontThrowError()
+        public async void Handle_PasswordAndUserMatch_DontThrowError()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -76,7 +77,7 @@ namespace Titans.Application.Tests.Commands
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
-            Func<Task> act = async () => await service.RunAsync(command);
+            Func<Task> act = async () => await service.Handle(command, _cancellationToken);
 
             // Assert
             await act.Should().NotThrowAsync();
@@ -84,7 +85,7 @@ namespace Titans.Application.Tests.Commands
         }
 
         [Fact]
-        public async void Create_PasswordAndUserMatch_ReturnToken()
+        public async void Handle_PasswordAndUserMatch_ReturnToken()
         {
             // Arrang
             var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -98,7 +99,7 @@ namespace Titans.Application.Tests.Commands
             userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
             // Act
-            var token = await service.RunAsync(command);
+            var token = await service.Handle(command, _cancellationToken);
 
             // Assert
             token.Should().NotBeEmpty();

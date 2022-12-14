@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MediatR;
 using System.Security.Cryptography;
 using Titans.Application.Repositories;
 using Titans.Contract.Command;
@@ -7,7 +8,7 @@ using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
-    public class RefreshTokenApplicationService : IRefreshTokenApplicationService
+    public class RefreshTokenApplicationService : IRequestHandler<RefreshTokenCommand, RefreshToken>
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
@@ -19,24 +20,25 @@ namespace Titans.Application.Commands
             _userRepository = userRepository;
             _mapper = mapper;
         }
-        public async Task<RefreshToken> RunAsync(RefreshTokenCommand command) 
+
+        public async Task<RefreshToken> Handle(RefreshTokenCommand command, CancellationToken cancellationToken)
         {
             var user = await GetUser();
 
             if (command.CurrentToken != string.Empty)
             {
-                if(user.RefreshToken?.Token != command.CurrentToken)
+                if (user.RefreshToken?.Token != command.CurrentToken)
                 {
                     throw new Exception(ErrorMessages.TokenInvalid);
                 }
 
-                if (user.RefreshToken?.Expires <= DateTime.UtcNow) 
+                if (user.RefreshToken?.Expires <= DateTime.UtcNow)
                 {
                     throw new Exception(ErrorMessages.TokenExpired);
                 }
             }
 
-            var refreshToken = CreateToken();                       
+            var refreshToken = CreateToken();
             await UpdateUser();
 
             return refreshToken;
@@ -65,7 +67,7 @@ namespace Titans.Application.Commands
             {
                 user.UpdateRefreshToken(_mapper.Map<Domain.User.RefreshToken>(refreshToken));
                 await _userRepository.UpdateAsync(user);
-            }            
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Titans.Domain.Tests.User
             var missingProp = nameof(RefreshToken.Token);
             act.Should().Throw<ValidationException>()
                 .WithMessage(ValidationExceptionExtensions.GetDomainValidationErrorText(missingProp, ErrorMessages.CanNotBeEmpty(missingProp)));
-        }        
+        }
 
         [Fact]
         public void Create_WithInvalidDate_ThrowValidationException()
@@ -59,6 +59,6 @@ namespace Titans.Domain.Tests.User
             refreshToken.Token.Should().Be(token);
             refreshToken.Created.Should().Be(created);
             refreshToken.Expires.Should().Be(expires);
-        }        
+        }
     }
 }

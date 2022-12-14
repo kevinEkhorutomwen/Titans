@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using MediatR;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -9,7 +10,7 @@ using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
-    public class LoginUserApplicationService : ILoginUserApplicationService
+    public class LoginUserApplicationService : IRequestHandler<LoginUserCommand, string>
     {
         readonly IUserRepository _userRepository;
         readonly ISettings _settings;
@@ -20,8 +21,7 @@ namespace Titans.Application.Commands
             _userRepository = userRepository;
             _settings = settings;
         }
-
-        public async Task<string> RunAsync(LoginUserCommand command)
+        public async Task<string> Handle(LoginUserCommand command, CancellationToken cancellationToken)
         {
             var user = await _userRepository.FindAsyncByUsername(command.Username);
             if (user == null)

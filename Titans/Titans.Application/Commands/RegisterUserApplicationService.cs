@@ -1,11 +1,12 @@
-﻿using System.Security.Cryptography;
+﻿using MediatR;
+using System.Security.Cryptography;
 using Titans.Application.Repositories;
 using Titans.Contract.Models.v1;
 using Titans.Domain;
 
 namespace Titans.Application.Commands
 {
-    public class RegisterUserApplicationService : IRegisterUserApplicationService
+    public class RegisterUserApplicationService : INotificationHandler<RegisterUserCommand>
     {
         readonly IUserRepository _userRepository;
         public RegisterUserApplicationService(IUserRepository userRepository)
@@ -13,7 +14,7 @@ namespace Titans.Application.Commands
             _userRepository = userRepository;
         }
 
-        public async Task RunAsync(RegisterUserCommand command)
+        public async Task Handle(RegisterUserCommand command, CancellationToken cancellationToken)
         {
             if (command.Password != command.ConfirmPassword)
             {

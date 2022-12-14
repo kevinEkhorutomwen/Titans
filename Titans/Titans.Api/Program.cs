@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -5,28 +6,20 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using Titans.Api;
-using Titans.Application.Commands;
 using Titans.Application.Mapping;
-using Titans.Application.Query;
 using Titans.Application.Repositories;
 using Titans.Contract.Interfaces;
 using Titans.SqlDb;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMediatR(typeof(Program));
+builder.Services.AddMediatR(typeof(IUserRepository));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISettings, Settings>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ILoginUserApplicationService, LoginUserApplicationService>();
-builder.Services.AddScoped<IRegisterUserApplicationService, RegisterUserApplicationService>();
-builder.Services.AddScoped<IGetUsersApplicationService, GetUsersApplicationService>();
-builder.Services.AddScoped<IGetUserInformationApplicationService, GetUserInformationApplicationService>();
-builder.Services.AddScoped<IRefreshTokenApplicationService, RefreshTokenApplicationService>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(Titans.SqlDb.Mapping.AutoMapperProfile).Assembly);
 builder.Services.AddCors(options => options.AddPolicy(name: "TitansOrigins",

@@ -1,6 +1,8 @@
-﻿namespace Titans.Contract.Command
+﻿using MediatR;
+
+namespace Titans.Contract.Command
 {
-    public class LoginUserCommand
+    public class LoginUserCommand : IRequest<string>
     {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
