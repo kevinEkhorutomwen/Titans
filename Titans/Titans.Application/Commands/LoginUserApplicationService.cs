@@ -1,24 +1,26 @@
 ﻿namespace Titans.Application.Commands;
 using MediatR;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Titans.Application.Repositories;
+using Titans.Contract;
 using Titans.Contract.Command;
-using Titans.Contract.Interfaces;
 using Titans.Domain;
 
 public class LoginUserApplicationService : IRequestHandler<LoginUserCommand, string>
 {
     readonly IUserRepository _userRepository;
-    readonly ISettings _settings;
+    private readonly IOptions<AppSettingsOptions> _options;
+
     public LoginUserApplicationService(
         IUserRepository userRepository,
-        ISettings settings)
+        IOptions<AppSettingsOptions> options)
     {
         _userRepository = userRepository;
-        _settings = settings;
+        _options = options;
     }
     public async Task<string> Handle(LoginUserCommand command, CancellationToken cancellationToken)
     {
@@ -51,7 +53,7 @@ public class LoginUserApplicationService : IRequestHandler<LoginUserCommand, str
             new Claim(ClaimTypes.Name, user.Username)
         };
 
-        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_settings.Token));
+        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_options.Value.Token));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
         var token = new JwtSecurityToken(

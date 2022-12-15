@@ -3,12 +3,13 @@ using AutoFixture;
 using FluentAssertions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using System.Security.Cryptography;
 using Titans.Application.Commands;
 using Titans.Application.Repositories;
+using Titans.Contract;
 using Titans.Contract.Command;
-using Titans.Contract.Interfaces;
 using Titans.Domain;
 using Xunit;
 
@@ -21,7 +22,7 @@ public class LoginUserApplicationServiceTests
     {
         _serviceProvider = new ServiceCollection()
             .AddScoped(x => Substitute.For<IUserRepository>())
-            .AddScoped(x => Substitute.For<ISettings>())
+            .AddScoped(x => Substitute.For<IOptions<AppSettingsOptions>>())
             .AddScoped<LoginUserApplicationService>()
             .BuildServiceProvider();
     }
@@ -67,11 +68,11 @@ public class LoginUserApplicationServiceTests
         // Arrang
         var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
         var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
-        var settings = _serviceProvider.GetRequiredService<ISettings>();
+        var settings = _serviceProvider.GetRequiredService<IOptions<AppSettingsOptions>>();
         var command = _fixture.Create<LoginUserCommand>();
         CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
         var user = UserFixtures.Create(passwordHash: passwordHash, passwordSalt: passwordSalt);
-        settings.Token.ReturnsForAnyArgs(_fixture.Create<string>());
+        settings.Value.ReturnsForAnyArgs(_fixture.Create<AppSettingsOptions>());
 
         userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
@@ -89,11 +90,11 @@ public class LoginUserApplicationServiceTests
         // Arrang
         var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
         var service = _serviceProvider.GetRequiredService<LoginUserApplicationService>();
-        var settings = _serviceProvider.GetRequiredService<ISettings>();
+        var settings = _serviceProvider.GetRequiredService<IOptions<AppSettingsOptions>>();
         var command = _fixture.Create<LoginUserCommand>();
         CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
         var user = UserFixtures.Create(passwordHash: passwordHash, passwordSalt: passwordSalt);
-        settings.Token.ReturnsForAnyArgs(_fixture.Create<string>());
+        settings.Value.ReturnsForAnyArgs(_fixture.Create<AppSettingsOptions>());
 
         userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 

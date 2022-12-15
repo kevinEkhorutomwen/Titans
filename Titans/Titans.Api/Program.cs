@@ -8,7 +8,7 @@ using System.Text;
 using Titans.Api;
 using Titans.Application.Mapping;
 using Titans.Application.Repositories;
-using Titans.Contract.Interfaces;
+using Titans.Contract;
 using Titans.SqlDb;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,8 +17,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMediatR(typeof(Program));
 builder.Services.AddMediatR(typeof(IUserRepository));
+builder.Services.Configure<AppSettingsOptions>(
+    builder.Configuration.GetSection(AppSettingsOptions.AppSettings));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ISettings, Settings>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(Titans.SqlDb.Mapping.AutoMapperProfile).Assembly);
