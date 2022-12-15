@@ -8,9 +8,10 @@ using System.Security.Cryptography;
 using Titans.Application.Repositories;
 using Titans.Contract;
 using Titans.Contract.Command;
+using Titans.Contract.Models.v1;
 using Titans.Domain;
 
-public class LoginUserApplicationService : IRequestHandler<LoginUserCommand, string>
+public class LoginUserApplicationService : IRequestHandler<LoginUserCommand, Result<string>>
 {
     readonly IUserRepository _userRepository;
     private readonly IOptions<AppSettingsOptions> _options;
@@ -22,20 +23,20 @@ public class LoginUserApplicationService : IRequestHandler<LoginUserCommand, str
         _userRepository = userRepository;
         _options = options;
     }
-    public async Task<string> Handle(LoginUserCommand command, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
     {
         var user = await _userRepository.FindAsyncByUsername(command.Username);
         if (user == null)
         {
-            throw new Exception(ErrorMessages.UserNotFound(command.Username));
+            return Result<string>.SetError(new Error(ErrorMessages.UserNotFound(command.Username)));
         }
 
         if (!VerifyPasswordHash(command.Password, user.PasswordHash, user.PasswordSalt))
         {
-            throw new Exception(ErrorMessages.WrongPassword);
+            return Result<string>.SetError(new Error(ErrorMessages.WrongPassword));
         }
 
-        return CreateToken(user);
+        return Result<string>.SetOk(CreateToken(user));
     }
 
     private static bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)

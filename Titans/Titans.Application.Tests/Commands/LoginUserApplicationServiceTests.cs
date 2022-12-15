@@ -55,10 +55,10 @@ public class LoginUserApplicationServiceTests
         userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var token = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.WrongPassword);
+        token.Error.Message.Should().NotBeNull();
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
 
@@ -102,7 +102,7 @@ public class LoginUserApplicationServiceTests
         var token = await service.Handle(command, _cancellationToken);
 
         // Assert
-        token.Should().NotBeEmpty();
+        token.Data.Should().NotBeEmpty();
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
 

@@ -21,19 +21,32 @@ public class AuthContoller : ControllerBase
     [HttpPost("Register")]
     public async Task<ActionResult> Register(RegisterUserCommand command)
     {
-        await _mediator.Publish(command);
+        var result = await _mediator.Send(command);
+        if (result.Error != null)
+        {
+            return new BadRequestObjectResult(result.Error.Message);
+        }
         return Ok();
     }
 
     [HttpPost("Login")]
     public async Task<ActionResult<string>> Login(LoginUserCommand command)
     {
-        var jwtToken = await _mediator.Send(command);
-        var refreshToken = await _mediator.Send(new RefreshTokenCommand(command.Username, string.Empty));
+        var jwtTokenResponse = await _mediator.Send(command);
+        if(jwtTokenResponse.Error != null)
+        {
+            return new BadRequestObjectResult(jwtTokenResponse.Error.Message);
+        }
 
-        SetRefreshToken(refreshToken);
+        var refreshTokenResponse = await _mediator.Send(new RefreshTokenCommand(command.Username, string.Empty));
+        if (refreshTokenResponse.Error != null)
+        {
+            return new BadRequestObjectResult(refreshTokenResponse.Error.Message);
+        }
 
-        return Ok(jwtToken);
+        SetRefreshToken(refreshTokenResponse.Data!);
+
+        return Ok(jwtTokenResponse.Data!);
     }
 
     [HttpGet("Users")]
@@ -48,11 +61,16 @@ public class AuthContoller : ControllerBase
     {
         var username = await _mediator.Send(new GetCurrentUserNameQuery());
         var cookieRefreshToken = await _mediator.Send(new GetCurrentRefreshToken());
-        var refreshToken = await _mediator.Send(new RefreshTokenCommand(username, cookieRefreshToken));
+        var refreshTokenResponse = await _mediator.Send(new RefreshTokenCommand(username, cookieRefreshToken));
 
-        SetRefreshToken(refreshToken);
+        if (refreshTokenResponse.Error != null)
+        {
+            return new BadRequestObjectResult(refreshTokenResponse.Error.Message);
+        }
 
-        return Ok(refreshToken);
+        SetRefreshToken(refreshTokenResponse.Data!);
+
+        return Ok(refreshTokenResponse.Data!);
     }
 
     private void SetRefreshToken(RefreshToken refreshToken)
