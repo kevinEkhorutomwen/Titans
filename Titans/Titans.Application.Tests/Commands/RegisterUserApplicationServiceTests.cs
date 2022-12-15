@@ -32,10 +32,10 @@ public class RegisterUserApplicationServiceTests
         var command = _fixture.Create<RegisterUserCommand>();
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var userResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.PasswordMustBeIdentical);
+        userResponse.Error.Should().BeEquivalentTo(new Error(ErrorMessages.PasswordMustBeIdentical));
         await userRepository.DidNotReceiveWithAnyArgs().CreateAsync(Arg.Any<Domain.User.User>());
         await userRepository.DidNotReceiveWithAnyArgs().FindAsyncByUsername(Arg.Any<string>());
     }
@@ -51,10 +51,10 @@ public class RegisterUserApplicationServiceTests
         userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var userResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.UserAlreadyExist);
+        userResponse.Error.Should().BeEquivalentTo(new Error(ErrorMessages.UserAlreadyExist));
         await userRepository.DidNotReceiveWithAnyArgs().CreateAsync(Arg.Any<Domain.User.User>());
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
@@ -68,10 +68,9 @@ public class RegisterUserApplicationServiceTests
         var command = CreateCommand();
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var userResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().NotThrowAsync();
         await userRepository.ReceivedWithAnyArgs(1).CreateAsync(Arg.Any<Domain.User.User>());
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }

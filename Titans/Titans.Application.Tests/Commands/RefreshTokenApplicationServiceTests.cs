@@ -33,10 +33,10 @@ public class RefreshTokenApplicationServiceTests
         var command = _fixture.Create<RefreshTokenCommand>();
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var tokenResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.UserNotFound(command.Username));
+        tokenResponse.Error.Should().BeEquivalentTo(new Contract.Models.v1.Error(ErrorMessages.UserNotFound(command.Username)));
         await userRepository.DidNotReceiveWithAnyArgs().CreateAsync(Arg.Any<User>());
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
@@ -52,10 +52,10 @@ public class RefreshTokenApplicationServiceTests
         userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var tokenResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.TokenInvalid);
+        tokenResponse.Error.Should().BeEquivalentTo(new Contract.Models.v1.Error(ErrorMessages.TokenInvalid));
         await userRepository.DidNotReceiveWithAnyArgs().CreateAsync(Arg.Any<User>());
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
@@ -72,16 +72,16 @@ public class RefreshTokenApplicationServiceTests
         userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var tokenResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage(ErrorMessages.TokenExpired);
+        tokenResponse.Error.Should().BeEquivalentTo(new Contract.Models.v1.Error(ErrorMessages.TokenExpired));
         await userRepository.DidNotReceiveWithAnyArgs().CreateAsync(Arg.Any<User>());
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
 
     [Fact]
-    public async void Handle_UserFound_DontThrowError()
+    public async void Handle_UserFound_DataShouldNotBeNull()
     {
         // Arrang
         var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
@@ -92,10 +92,10 @@ public class RefreshTokenApplicationServiceTests
         userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
 
         // Act
-        Func<Task> act = async () => await service.Handle(command, _cancellationToken);
+        var tokenResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
-        await act.Should().NotThrowAsync();
+        tokenResponse.Data.Should().NotBeNull();
         await userRepository.ReceivedWithAnyArgs(1).UpdateAsync(Arg.Any<User>());
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }

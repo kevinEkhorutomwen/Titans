@@ -1,11 +1,14 @@
 ﻿namespace Titans.Application.Commands;
 using MediatR;
 using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Titans.Application.Repositories;
+using Titans.Contract;
 using Titans.Contract.Models.v1;
 using Titans.Domain;
 
-public class RegisterUserApplicationService : INotificationHandler<RegisterUserCommand>
+public class RegisterUserApplicationService : IRequestHandler<RegisterUserCommand, Result>
 {
     readonly IUserRepository _userRepository;
     public RegisterUserApplicationService(IUserRepository userRepository)
@@ -13,18 +16,18 @@ public class RegisterUserApplicationService : INotificationHandler<RegisterUserC
         _userRepository = userRepository;
     }
 
-    public async Task Handle(RegisterUserCommand command, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
     {
         if (command.Password != command.ConfirmPassword)
         {
-            throw new Exception(ErrorMessages.PasswordMustBeIdentical);
+            return Result.SetError(new Error(ErrorMessages.PasswordMustBeIdentical));
         }
 
         var user = await _userRepository.FindAsyncByUsername(command.Username);
         {
             if (user != null)
             {
-                throw new Exception(ErrorMessages.UserAlreadyExist);
+                return Result.SetError(new Error(ErrorMessages.UserAlreadyExist));
             }
         }
 
@@ -32,6 +35,8 @@ public class RegisterUserApplicationService : INotificationHandler<RegisterUserC
 
         user = Domain.User.User.Create(command.Username, passwordHash, passwordSalt);
         await _userRepository.CreateAsync(user);
+
+        return new Result();
     }
 
     private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
