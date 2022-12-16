@@ -80,7 +80,7 @@ public class LoginUserApplicationServiceTests
         var token = await service.Handle(command, _cancellationToken);
 
         // Assert
-        token.Data.Should().NotBeEmpty();
+        token.Error.Should().BeNull();
         await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
 

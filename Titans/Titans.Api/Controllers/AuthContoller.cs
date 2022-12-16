@@ -32,8 +32,14 @@ public class AuthContoller : ControllerBase
     [HttpPost("Login")]
     public async Task<ActionResult<string>> Login(LoginUserCommand command)
     {
-        var jwtTokenResponse = await _mediator.Send(command);
-        if(jwtTokenResponse.Error != null)
+        var loginResponse = await _mediator.Send(command);
+        if (loginResponse.Error != null)
+        {
+            return new BadRequestObjectResult(loginResponse.Error.Message);
+        }
+
+        var jwtTokenResponse = await _mediator.Send(new CreateJwtTokenCommand(new Claims(command.Username)));
+        if (jwtTokenResponse.Error != null)
         {
             return new BadRequestObjectResult(jwtTokenResponse.Error.Message);
         }
@@ -49,28 +55,32 @@ public class AuthContoller : ControllerBase
         return Ok(jwtTokenResponse.Data!);
     }
 
-    [HttpGet("Users")]
+    [HttpGet("Users"), Authorize]
     public async Task<ActionResult<List<User>>> GetUsers()
     {
         var users = await _mediator.Send(new GetUsersQuery());
         return Ok(users);
     }
 
-    [HttpPost("RefreshToken"), Authorize]
-    public async Task<ActionResult<string>> RefreshToken()
+    [HttpPost("RefreshToken")]
+    public async Task<ActionResult<string>> RefreshToken(Claims claims)
     {
-        var username = await _mediator.Send(new GetCurrentUserNameQuery());
         var cookieRefreshToken = await _mediator.Send(new GetCurrentRefreshToken());
-        var refreshTokenResponse = await _mediator.Send(new RefreshTokenCommand(username, cookieRefreshToken));
-
+        var refreshTokenResponse = await _mediator.Send(new RefreshTokenCommand(claims.Username, cookieRefreshToken));
         if (refreshTokenResponse.Error != null)
         {
             return new BadRequestObjectResult(refreshTokenResponse.Error.Message);
         }
 
+        var jwtTokenResponse = await _mediator.Send(new CreateJwtTokenCommand(claims));
+        if (jwtTokenResponse.Error != null)
+        {
+            return new BadRequestObjectResult(jwtTokenResponse.Error.Message);
+        }
+
         SetRefreshToken(refreshTokenResponse.Data!);
 
-        return Ok(refreshTokenResponse.Data!);
+        return Ok(jwtTokenResponse.Data!);
     }
 
     private void SetRefreshToken(RefreshToken refreshToken)

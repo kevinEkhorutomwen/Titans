@@ -23,17 +23,15 @@ public class RegisterUserApplicationService : IRequestHandler<RegisterUserComman
             return Result.SetError(new Error(ErrorMessages.PasswordMustBeIdentical));
         }
 
-        var user = await _userRepository.FindAsyncByUsername(command.Username);
+        if (_userRepository.UserAlreadyExist(command.Username))
         {
-            if (user != null)
-            {
-                return Result.SetError(new Error(ErrorMessages.UserAlreadyExist));
-            }
+            return Result.SetError(new Error(ErrorMessages.UserAlreadyExist));
         }
+
 
         CreatePasswordHash(command.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-        user = Domain.User.User.Create(command.Username, passwordHash, passwordSalt);
+        var user = Domain.User.User.Create(command.Username, passwordHash, passwordSalt);
         await _userRepository.CreateAsync(user);
 
         return new Result();

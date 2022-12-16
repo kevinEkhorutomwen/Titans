@@ -39,4 +39,9 @@ public class UserRepository : IUserRepository
         _context.Update(sqlUser);
         await _context.SaveChangesAsync();
     }
+
+    public bool UserAlreadyExist(string username)
+    {
+        return _context.Users.Any();
+    }
 }

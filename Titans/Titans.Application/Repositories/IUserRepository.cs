@@ -7,4 +7,5 @@ public interface IUserRepository
     Task UpdateAsync(User user);
     Task<List<User>> FindAsync();
     Task<User?> FindAsyncByUsername(string username);
+    bool UserAlreadyExist(string username);
 }
