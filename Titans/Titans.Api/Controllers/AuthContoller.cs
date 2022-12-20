@@ -1,6 +1,7 @@
 ﻿namespace Titans.Api.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Titans.Contract.Command;
 using Titans.Contract.Models.v1;
@@ -55,6 +56,13 @@ public class AuthContoller : ControllerBase
         return Ok(jwtTokenResponse.Data!);
     }
 
+    [HttpPost("Logout")]
+    public ActionResult<string> Logout()
+    {
+        Response.Cookies.Delete("refreshToken");
+        return Ok();
+    }
+
     [HttpGet("Users"), Authorize]
     public async Task<ActionResult<List<User>>> GetUsers()
     {
@@ -88,7 +96,7 @@ public class AuthContoller : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Expires = refreshToken.Expires
+            Expires = refreshToken.Expires,
         };
 
         Response.Cookies.Append("refreshToken", refreshToken.Token, cookieOptions);

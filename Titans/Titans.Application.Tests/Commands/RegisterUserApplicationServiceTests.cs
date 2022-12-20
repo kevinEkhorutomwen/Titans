@@ -47,8 +47,7 @@ public class RegisterUserApplicationServiceTests
         var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
         var service = _serviceProvider.GetRequiredService<RegisterUserApplicationService>();
         var command = CreateCommand();
-        var user = UserFixtures.Create();
-        userRepository.FindAsyncByUsername(Arg.Any<string>()).ReturnsForAnyArgs(user);
+        userRepository.UserAlreadyExist(Arg.Any<string>()).ReturnsForAnyArgs(true);
 
         // Act
         var userResponse = await service.Handle(command, _cancellationToken);
@@ -56,7 +55,6 @@ public class RegisterUserApplicationServiceTests
         // Assert
         userResponse.Error.Should().BeEquivalentTo(new Error(ErrorMessages.UserAlreadyExist));
         await userRepository.DidNotReceiveWithAnyArgs().CreateAsync(Arg.Any<Domain.User.User>());
-        await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
 
     [Fact]
@@ -66,13 +64,14 @@ public class RegisterUserApplicationServiceTests
         var userRepository = _serviceProvider.GetRequiredService<IUserRepository>();
         var service = _serviceProvider.GetRequiredService<RegisterUserApplicationService>();
         var command = CreateCommand();
+        userRepository.UserAlreadyExist(Arg.Any<string>()).ReturnsForAnyArgs(false);
 
         // Act
         var userResponse = await service.Handle(command, _cancellationToken);
 
         // Assert
+        userResponse.Error.Should().BeNull();
         await userRepository.ReceivedWithAnyArgs(1).CreateAsync(Arg.Any<Domain.User.User>());
-        await userRepository.ReceivedWithAnyArgs(1).FindAsyncByUsername(Arg.Any<string>());
     }
 
     private RegisterUserCommand CreateCommand()
